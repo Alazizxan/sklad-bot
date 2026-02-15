@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  telegramId   BigInt   @unique
+  phone        String
+  fullName     String
+  balanceUzs   BigInt   @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  orders       Order[]
+}
+
+model Admin {
+  id         String @id @default(cuid())
+  telegramId BigInt @unique
+  isActive   Boolean @default(true)
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  title     String
+  sort      Int      @default(0)
+  createdAt DateTime @default(now())
+
+  products  Product[]
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  categoryId  String?
+  title       String
+  sku         String?
+  priceUzs    BigInt
+  unit        String   @default("кг") // кг / шт / м2 ...
+  stock       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  category    Category? @relation(fields: [categoryId], references: [id])
+  items       OrderItem[]
+}
+
+model Order {
+  id          String   @id @default(cuid())
+  userId      String
+  status      String   @default("NEW")
+  totalUzs    BigInt
+  comment     String?
+  deliveryName  String
+  deliveryPhone String
+  deliveryAddress String
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id])
+  items       OrderItem[]
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  qty       Int
+  priceUzs  BigInt // snapshot
+  title     String // snapshot
+  unit      String
+
+  order     Order   @relation(fields: [orderId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+}
