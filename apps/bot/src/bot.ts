@@ -1,4 +1,4 @@
-import { prisma } from "./telegram";
+import { prisma } from "./services/telegram";
 
 export async function getLastOrders(telegramId: bigint, limit = 5) {
   const user = await prisma.user.findUnique({ where: { telegramId } });
